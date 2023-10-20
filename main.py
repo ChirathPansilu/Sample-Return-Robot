@@ -60,3 +60,30 @@ ax2.imshow(colorsel, cmap='gray')
 ax2.set_title('Your Result', fontsize=40)
 plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
 plt.show()
+
+image = mpimg.imread('example_grid1.jpg')
+plt.imshow(image)
+plt.show() 
+
+import cv2
+
+def perspect_transform(img, src, dst):
+    M = cv2.getPerspectiveTransform(src, dst)
+    warped = cv2.warpPerspective(img, M, (img.shape[1], img.shape[0]))
+    return warped
+
+# Source and Destination points
+source = np.float32([[14, 140], [118, 95], [200, 95], [300, 140]])
+
+dst_size = 10
+offset = 5
+
+destination = np.float32([[image.shape[1]/2 - dst_size/2, image.shape[0] - offset],
+                          [image.shape[1]/2 - dst_size/2, image.shape[0] - offset - dst_size], 
+                          [image.shape[1]/2 + dst_size/2, image.shape[0] - offset - dst_size],
+                          [image.shape[1]/2 + dst_size/2, image.shape[0] - offset]]
+                        )      
+
+warped = perspect_transform(image, source, destination)
+plt.imshow(warped)
+plt.show() 
