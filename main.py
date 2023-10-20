@@ -115,3 +115,75 @@ plt.plot(nx, ny, '.')
 plt.ylim(-160, 160)
 plt.xlim(0, 160)
 plt.show() 
+
+def rotate_pix(xpix, ypix, yaw):
+    yaw_rad = yaw * np.pi/180
+
+    x_rotated = xpix*np.cos(yaw_rad) - ypix*np.sin(yaw_rad)
+    y_rotated = xpix*np.sin(yaw_rad) + ypix*np.cos(yaw_rad)
+
+    return x_rotated, y_rotated
+
+def translate_pix(xpix_rot, ypix_rot, xpos, ypos, scale): 
+    x_translated = np.int_(xpos + (xpix_rot/scale))
+    y_translated = np.int_(ypos + (ypix_rot/scale))
+    
+    return x_translated, y_translated
+
+def pix_to_world(xpix, ypix, xpos, ypos, yaw, world_size, scale):
+    xpix_rot, ypix_rot = rotate_pix(xpix, ypix, yaw)
+    
+    xpix_tran, ypix_tran = translate_pix(xpix_rot, ypix_rot, xpos, ypos, scale)
+    
+    # Clipping to world map size
+    x_pix_world = np.clip(np.int_(xpix_tran), 0, world_size - 1)
+    y_pix_world = np.clip(np.int_(ypix_tran), 0, world_size - 1)
+
+    return x_pix_world, y_pix_world
+
+# mock values
+rover_yaw = np.random.random(1)*360
+
+rover_xpos = np.random.random(1)*160 + 20
+rover_ypos = np.random.random(1)*160 + 20
+
+# rover coords
+xpix, ypix = rover_coords(colorsel)
+
+# 200 x 200 worldmap
+worldmap = np.zeros((200, 200))
+
+# scale factor of 10 between world space pixels and rover space pixels
+scale = 10
+
+# world coords
+x_world, y_world = pix_to_world(xpix, 
+                                ypix, 
+                                rover_xpos, 
+                                rover_ypos, 
+                                rover_yaw, 
+                                worldmap.shape[0], 
+                                scale)
+
+# Add pixel to worldmap
+worldmap[y_world, x_world] += 1
+
+print('Xpos =', rover_xpos, 'Ypos =', rover_ypos, 'Yaw =', rover_yaw)
+
+# rover centric coords
+f, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 7))
+f.tight_layout()
+ax1.plot(xpix, ypix, '.')
+ax1.set_title('Rover Space', fontsize=40)
+ax1.set_ylim(-160, 160)
+ax1.set_xlim(0, 160)
+ax1.tick_params(labelsize=20)
+
+# world coords
+ax2.imshow(worldmap, cmap='gray')
+ax2.set_title('World Space', fontsize=40)
+ax2.set_ylim(0, 200)
+ax2.tick_params(labelsize=20)
+ax2.set_xlim(0, 200)
+plt.subplots_adjust(left=0.1, right=1, top=0.9, bottom=0.1)
+plt.show()
