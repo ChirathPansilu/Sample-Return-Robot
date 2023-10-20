@@ -87,3 +87,31 @@ destination = np.float32([[image.shape[1]/2 - dst_size/2, image.shape[0] - offse
 warped = perspect_transform(image, source, destination)
 plt.imshow(warped)
 plt.show() 
+
+image = mpimg.imread('sample.jpg')
+
+warped = perspect_transform(image, source, destination)
+colorsel = color_thresh(warped, rgb_thresh=(160, 160, 160))
+
+plt.imshow(colorsel, cmap='gray')
+plt.show()
+
+ypos, xpos = colorsel.nonzero()
+plt.plot(xpos, ypos, '.')
+plt.xlim(0, 320)
+plt.ylim(0, 160)
+plt.show() 
+
+def rover_coords(binary_img):
+    ypos, xpos = binary_img.nonzero()
+    
+    y_pixel = (xpos - binary_img.shape[1]/2).astype(np.float64)
+    x_pixel = (binary_img.shape[0] - ypos).astype(np.float64)
+
+    return x_pixel, y_pixel
+
+nx, ny = rover_coords(colorsel)
+plt.plot(nx, ny, '.')
+plt.ylim(-160, 160)
+plt.xlim(0, 160)
+plt.show() 
